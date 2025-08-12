@@ -261,11 +261,9 @@ function Game({ playerClass, difficulty, onExit }) {
     setPlayer(newPlayer);
     setAi(newAi);
 
-    // Добавляем задержку перед ходом ИИ
-    setTimeout(() => {
-      setTurn('ai');
-      setMessage('Ход ИИ...');
-    }, 1000);
+    // Сразу переключаем ход на ИИ, чтобы деактивировать карточки игрока
+    setTurn('ai');
+    setMessage('Ход ИИ...');
   };
 
   // Логика инициализации игры
@@ -301,107 +299,113 @@ function Game({ playerClass, difficulty, onExit }) {
   // Логика хода ИИ и начала нового раунда
   useEffect(() => {
     if (turn === 'ai' && ai && player) {
-      let newAi = { ...ai, hand: [...ai.hand], deck: [...ai.deck] };
-      let newPlayer = { ...player, hand: [...player.hand], deck: [...player.deck] };
+      // Добавляем задержку перед началом хода ИИ
+      const aiTurnTimeout = setTimeout(() => {
+        let newAi = { ...ai, hand: [...ai.hand], deck: [...ai.deck] };
+        let newPlayer = { ...player, hand: [...player.hand], deck: [...player.deck] };
 
-      // Логика startTurn() для ИИ
-      newAi.maxMana = Math.min(newAi.maxMana + 1, 10);
-      newAi.mana = newAi.maxMana;
-      
-      const aiMaxHandSize = getMaxHandSize(round);
-      while(newAi.hand.length < aiMaxHandSize && newAi.deck.length > 0) {
-        const cardToDraw = newAi.deck.shift();
-        if (cardToDraw) {
-          newAi.hand.push(cardToDraw);
-        }
-      }
-      newAi.reflect = 0;
-
-      const aiHasPlayableCards = newAi.hand.some(c => c.cost <= newAi.mana);
-      const aiDeckEmpty = newAi.deck.length === 0;
-
-      if (!aiHasPlayableCards && aiDeckEmpty) {
-        setMessage('У ИИ закончились карты и нет ходов. Вы выиграли! 🎉');
-        setAi({ ...newAi, hp: 0 });
-        return;
-      }
-
-      let card;
-      const playableCards = newAi.hand.filter(c => c.cost <= newAi.mana);
-
-      // Логика выбора карты в зависимости от сложности
-      if (difficulty <= 0.5) { // Легкий
-        const randomCardIndex = Math.floor(Math.random() * playableCards.length);
-        card = playableCards[randomCardIndex];
-      } else if (difficulty <= 0.8) { // Средний
-        card = playableCards.sort((a, b) => b.cost - a.cost)[0];
-      } else if (difficulty <= 1.0) { // Высокий
-        const attackCards = playableCards.filter(c => c.type === 'attack');
-        card = attackCards.sort((a, b) => b.value - a.value)[0] || playableCards.sort((a, b) => b.cost - a.cost)[0];
-      } else { // Магистр (1.2)
-        const attackCards = playableCards.filter(c => c.type === 'attack');
-        const defenseCards = playableCards.filter(c => c.type === 'defense');
-        if (player.hp <= 10 && attackCards.length > 0) {
-          card = attackCards.sort((a, b) => b.value - a.value)[0];
-        } else if (ai.hp <= 10 && defenseCards.length > 0) {
-          card = defenseCards.sort((a, b) => b.value - a.value)[0];
-        } else {
-          card = playableCards.sort((a, b) => b.cost - a.cost)[0];
-        }
-      }
-
-      if (!card) {
-        setMessage('ИИ пропускает ход (нет маны или карт)');
-      } else {
-        const cardIndex = newAi.hand.findIndex(c => c.uuid === card.uuid);
-        newAi.mana -= card.cost;
-        newAi.hand.splice(cardIndex, 1);
-
-        if (card.type === 'attack') {
-          if (newPlayer.reflect > 0) {
-            newAi = takeDamage(newAi, newPlayer.reflect);
-            setMessage(`Вы отражаете ${newPlayer.reflect} урона! 💥`);
-          }
-          newPlayer = takeDamage(newPlayer, card.value);
-          setMessage(`ИИ наносит вам ${card.value} урона. 💥`);
-        } else if (card.type === 'defense') {
-          newAi.armor += card.value;
-          setMessage(`ИИ получает ${card.value} брони. 🛡️`);
-        } else if (card.id === 'reflect') {
-          newAi.reflect = 3;
-          setMessage('ИИ активировал отражение урона. ✨');
-        } else {
-          setMessage('ИИ сыграл карту.');
-        }
-      }
-
-      setTimeout(() => {
-        const nextRound = round + 1;
-        const playerMaxHandSize = getMaxHandSize(nextRound);
+        // Логика начала хода для ИИ
+        newAi.maxMana = Math.min(newAi.maxMana + 1, 10);
+        newAi.mana = newAi.maxMana;
         
-        newPlayer.maxMana = Math.min(newPlayer.maxMana + 1, 10);
-        newPlayer.mana = newPlayer.maxMana;
-        while(newPlayer.hand.length < playerMaxHandSize && newPlayer.deck.length > 0) {
-          const cardToDraw = newPlayer.deck.shift();
+        const aiMaxHandSize = getMaxHandSize(round);
+        while(newAi.hand.length < aiMaxHandSize && newAi.deck.length > 0) {
+          const cardToDraw = newAi.deck.shift();
           if (cardToDraw) {
-            newPlayer.hand.push(cardToDraw);
+            newAi.hand.push(cardToDraw);
           }
         }
-        newPlayer.reflect = 0;
+        newAi.reflect = 0;
 
-        const playerHasPlayableCards = newPlayer.hand.some(c => c.cost <= newPlayer.mana);
-        if (!playerHasPlayableCards && newPlayer.deck.length === 0) {
-          setMessage('У вас закончились карты, и вы не можете сделать ход. Вы проиграли! 😞');
-          setPlayer({ ...newPlayer, hp: 0 });
+        const aiHasPlayableCards = newAi.hand.some(c => c.cost <= newAi.mana);
+        const aiDeckEmpty = newAi.deck.length === 0;
+
+        if (!aiHasPlayableCards && aiDeckEmpty) {
+          setMessage('У ИИ закончились карты и нет ходов. Вы выиграли! 🎉');
+          setAi({ ...newAi, hp: 0 });
           return;
         }
 
-        setPlayer(newPlayer);
-        setAi(newAi);
-        setTurn('player');
-        setRound(nextRound);
-        setMessage('Ваш ход ✨');
-      }, 1500);
+        let card;
+        const playableCards = newAi.hand.filter(c => c.cost <= newAi.mana);
+
+        // Логика выбора карты в зависимости от сложности
+        if (difficulty <= 0.5) { // Легкий
+          const randomCardIndex = Math.floor(Math.random() * playableCards.length);
+          card = playableCards[randomCardIndex];
+        } else if (difficulty <= 0.8) { // Средний
+          card = playableCards.sort((a, b) => b.cost - a.cost)[0];
+        } else if (difficulty <= 1.0) { // Высокий
+          const attackCards = playableCards.filter(c => c.type === 'attack');
+          card = attackCards.sort((a, b) => b.value - a.value)[0] || playableCards.sort((a, b) => b.cost - a.cost)[0];
+        } else { // Магистр (1.2)
+          const attackCards = playableCards.filter(c => c.type === 'attack');
+          const defenseCards = playableCards.filter(c => c.type === 'defense');
+          if (player.hp <= 10 && attackCards.length > 0) {
+            card = attackCards.sort((a, b) => b.value - a.value)[0];
+          } else if (ai.hp <= 10 && defenseCards.length > 0) {
+            card = defenseCards.sort((a, b) => b.value - a.value)[0];
+          } else {
+            card = playableCards.sort((a, b) => b.cost - a.cost)[0];
+          }
+        }
+
+        if (!card) {
+          setMessage('ИИ пропускает ход (нет маны или карт)');
+        } else {
+          const cardIndex = newAi.hand.findIndex(c => c.uuid === card.uuid);
+          newAi.mana -= card.cost;
+          newAi.hand.splice(cardIndex, 1);
+
+          if (card.type === 'attack') {
+            if (newPlayer.reflect > 0) {
+              newAi = takeDamage(newAi, newPlayer.reflect);
+              setMessage(`Вы отражаете ${newPlayer.reflect} урона! 💥`);
+            }
+            newPlayer = takeDamage(newPlayer, card.value);
+            setMessage(`ИИ наносит вам ${card.value} урона. 💥`);
+          } else if (card.type === 'defense') {
+            newAi.armor += card.value;
+            setMessage(`ИИ получает ${card.value} брони. 🛡️`);
+          } else if (card.id === 'reflect') {
+            newAi.reflect = 3;
+            setMessage('ИИ активировал отражение урона. ✨');
+          } else {
+            setMessage('ИИ сыграл карту.');
+          }
+        }
+
+        // Завершение хода ИИ и начало хода игрока
+        setTimeout(() => {
+          const nextRound = round + 1;
+          const playerMaxHandSize = getMaxHandSize(nextRound);
+          
+          newPlayer.maxMana = Math.min(newPlayer.maxMana + 1, 10);
+          newPlayer.mana = newPlayer.maxMana;
+          while(newPlayer.hand.length < playerMaxHandSize && newPlayer.deck.length > 0) {
+            const cardToDraw = newPlayer.deck.shift();
+            if (cardToDraw) {
+              newPlayer.hand.push(cardToDraw);
+            }
+          }
+          newPlayer.reflect = 0;
+
+          const playerHasPlayableCards = newPlayer.hand.some(c => c.cost <= newPlayer.mana);
+          if (!playerHasPlayableCards && newPlayer.deck.length === 0) {
+            setMessage('У вас закончились карты, и вы не можете сделать ход. Вы проиграли! 😞');
+            setPlayer({ ...newPlayer, hp: 0 });
+            return;
+          }
+
+          setPlayer(newPlayer);
+          setAi(newAi);
+          setTurn('player');
+          setRound(nextRound);
+          setMessage('Ваш ход ✨');
+        }, 1500); // Задержка перед началом хода игрока
+      }, 1000); // Задержка перед началом хода ИИ
+
+      return () => clearTimeout(aiTurnTimeout);
     }
   }, [turn, ai, player, difficulty, round]);
 
