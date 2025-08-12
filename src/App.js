@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { characters } from './gameData';
 import './animations.css';
 import './modal.css';
@@ -30,20 +30,7 @@ function InfoModal({ onClose }) {
 }
 
 // Главная страница с анимацией
-function Landing({ onPlay, onOpenInfo, isFadingOut }) {
-  const [animateStep, setAnimateStep] = useState(0);
-
-  useEffect(() => {
-    if (!isFadingOut) {
-      const timers = [
-        setTimeout(() => setAnimateStep(1), 300),
-        setTimeout(() => setAnimateStep(2), 900),
-        setTimeout(() => setAnimateStep(3), 1300),
-      ];
-      return () => timers.forEach(clearTimeout);
-    }
-  }, [isFadingOut]);
-
+function Landing({ onPlay, onOpenInfo, isFadingOut, isMuted, onToggleMute, volume, onVolumeChange, animateStep }) {
   return (
     <div className={`game-container landing-page ${isFadingOut ? 'fade-out' : ''}`}>
       <div className="animated-gradient"></div>
@@ -84,7 +71,7 @@ function Landing({ onPlay, onOpenInfo, isFadingOut }) {
       >
         Играть
       </button>
-
+      
       {/* Кнопка с иконкой настроек */}
       <button
         onClick={onOpenInfo}
@@ -113,6 +100,41 @@ function Landing({ onPlay, onOpenInfo, isFadingOut }) {
           <circle cx="12" cy="12" r="3"></circle>
         </svg>
       </button>
+
+      {/* Элементы управления музыкой */}
+      <div style={{
+        position: 'absolute', bottom: 20, left: 20,
+        opacity: animateStep >= 3 ? 1 : 0,
+        transition: 'opacity 0.6s ease',
+        display: 'flex', alignItems: 'center', gap: '10px',
+        zIndex: 2,
+      }}>
+        {/* Кнопка Mute/Unmute */}
+        <button
+          onClick={onToggleMute}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--color-light-text)', padding: 0,
+          }}
+          title={isMuted ? "Включить музыку" : "Выключить музыку"}
+        >
+          {isMuted ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-volume-x"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-volume-2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          )}
+        </button>
+        {/* Ползунок громкости */}
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          value={volume}
+          onChange={onVolumeChange}
+          className="w-24 appearance-none h-1 bg-gray-600 rounded-full cursor-pointer"
+        />
+      </div>
     </div>
   );
 }
@@ -175,7 +197,7 @@ function CharacterSelect({ characters, selectedChar, onSelect, onBack, onConfirm
 function DifficultySelect({ onSelect, onBack, isFadingOut }) {
   const difficulties = [
     { level: 'Легкий', emoji: '🌱', multiplier: 0.5, desc: 'ИИ играет случайные карты.' },
-    { level: 'Средний', emoji: '�', multiplier: 0.8, desc: 'ИИ играет самые сильные карты.' },
+    { level: 'Средний', emoji: '🧠', multiplier: 0.8, desc: 'ИИ играет самые сильные карты.' },
     { level: 'Высокий', emoji: '🔥', multiplier: 1.0, desc: 'ИИ ищет лучшую атаку.' },
     { level: 'Магистр', emoji: '👑', multiplier: 1.2, desc: 'ИИ выбирает идеальную стратегию.' },
   ];
@@ -292,7 +314,7 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
     if (card.type === 'attack') {
       if (newAi.reflect > 0) {
         newPlayer = takeDamage(newPlayer, newAi.reflect);
-        actionMessage = `ИИ отражает ${newAi.reflect} урона! 💥`;
+        actionMessage = `ИИ отражает ${newAi.reflect} урона! `;
       }
       newAi = takeDamage(newAi, card.value);
       actionMessage = `Вы нанесли ${card.value} урона ИИ. 💥`;
@@ -600,8 +622,43 @@ export default function App() {
   const [selectedChar, setSelectedChar] = useState(null);
   const [difficulty, setDifficulty] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(0.5);
 
   const TRANSITION_DURATION = 500; // Длительность анимации в мс
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    // Инициализация Audio объекта
+    if (!audioRef.current) {
+      audioRef.current = new Audio('/music.mp3');
+      audioRef.current.loop = true;
+      audioRef.current.volume = volume;
+      audioRef.current.muted = isMuted;
+    }
+  }, []);
+
+  // Синхронизация громкости
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  // Синхронизация статуса mute
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+
+  const handleVolumeChange = (e) => {
+    setVolume(parseFloat(e.target.value));
+  };
+
+  const handleToggleMute = () => {
+    setIsMuted(!isMuted);
+  };
 
   // Универсальная функция для плавного перехода
   const handleStageChange = (newStage, callback = () => {}) => {
@@ -613,7 +670,17 @@ export default function App() {
     }, TRANSITION_DURATION);
   };
 
-  const handlePlay = () => handleStageChange('characterSelect');
+  const handlePlay = async () => {
+    // Воспроизводим музыку при первом взаимодействии
+    if (audioRef.current) {
+      try {
+        await audioRef.current.play();
+      } catch (error) {
+        console.error("Ошибка при воспроизведении музыки:", error);
+      }
+    }
+    handleStageChange('characterSelect');
+  };
 
   const handleConfirmChar = () => {
     if (selectedChar) {
@@ -646,6 +713,20 @@ export default function App() {
   const handleCloseInfo = () => handleStageChange('landing');
 
   const playerClass = characters.find(c => c.id === selectedChar) || characters[0];
+  
+  const [animateStep, setAnimateStep] = useState(0);
+  useEffect(() => {
+    if (stage === 'landing' && !isTransitioning) {
+      const timers = [
+        setTimeout(() => setAnimateStep(1), 300),
+        setTimeout(() => setAnimateStep(2), 900),
+        setTimeout(() => setAnimateStep(3), 1300),
+      ];
+      return () => timers.forEach(clearTimeout);
+    } else {
+      setAnimateStep(0);
+    }
+  }, [stage, isTransitioning]);
 
   return (
     <div className="App">
@@ -655,6 +736,11 @@ export default function App() {
           onPlay={handlePlay}
           onOpenInfo={handleOpenInfo}
           isFadingOut={isTransitioning}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
+          volume={volume}
+          onVolumeChange={handleVolumeChange}
+          animateStep={animateStep}
         />
       )}
       {stage === 'info' && <InfoModal onClose={handleCloseInfo} />}
