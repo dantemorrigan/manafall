@@ -4,6 +4,8 @@ import './animations.css';
 import './modal.css';
 import './App.css';
 import { v4 as uuidv4 } from 'uuid';
+import MultiplayerLobby from './MultiplayerLobby';
+import ChallengeNotificationModal from './ChallengeNotificationModal';
 
 // Компонент, отображающий анимированный оверлей во время перехода
 function TransitionOverlay() {
@@ -93,7 +95,7 @@ function AuthModal({ onClose, onLogin, onRegister }) {
     e.preventDefault();
     setError('');
 
-    // Имитация базы данных пользователей
+    // Имитация базы данных пользователей с использованием одного ключа в localStorage
     const users = JSON.parse(localStorage.getItem('users')) || {};
 
     if (isLoginView) {
@@ -115,7 +117,7 @@ function AuthModal({ onClose, onLogin, onRegister }) {
           stats: { wins: 0, losses: 0 }
         };
         users[username] = newUser;
-        localStorage.setItem('users', JSON.stringify(users));
+        localStorage.setItem('users', JSON.stringify(users)); // <-- Обновляем общую базу
         onRegister(username);
       }
     }
@@ -840,10 +842,11 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
-  const [isMultiplayerVisible, setIsMultiplayerVisible] = useState(false);
   const [isAuthModalVisible, setIsAuthModalVisible] = useState(false);
   const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [opponent, setOpponent] = useState(null);
+  const [pendingChallenge, setPendingChallenge] = useState(null); // <-- Состояние для входящего вызова
 
   const TRANSITION_DURATION = 500;
   const audioRef = useRef(null);
@@ -877,6 +880,19 @@ export default function App() {
     }
   }, [isMuted]);
 
+  // Эффект для имитации получения вызова
+  useEffect(() => {
+    if (currentUser && stage === 'multiplayerLobby') {
+      const interval = setInterval(() => {
+        const challenges = JSON.parse(localStorage.getItem('pendingChallenges')) || {};
+        if (challenges[currentUser.username]) {
+          setPendingChallenge(challenges[currentUser.username]);
+        }
+      }, 500); // Проверяем раз в полсекунды
+      return () => clearInterval(interval);
+    }
+  }, [currentUser, stage]);
+
   const handleVolumeChange = (e) => {
     setVolume(parseFloat(e.target.value));
   };
@@ -902,65 +918,73 @@ export default function App() {
         console.error("Ошибка при воспроизведении музыки:", error);
       }
     }
+    setSelectedChar(null);
     handleStageChange('characterSelect');
   };
 
   const handleOpenMultiplayer = () => {
-    setIsMultiplayerVisible(true);
-  };
-
-  const handleCloseMultiplayer = () => {
-    setIsMultiplayerVisible(false);
-  };
-
-  const handleConfirmChar = () => {
-    if (selectedChar) {
-      handleStageChange('difficultySelect');
+    if (!currentUser) {
+      setIsAuthModalVisible(true);
+    } else {
+      setOpponent(null);
+      handleStageChange('multiplayerLobby');
     }
   };
 
-  const handleConfirmDifficulty = (difficultyMultiplier) => {
-    handleStageChange('game', () => {
-      setDifficulty(difficultyMultiplier);
-    });
+  const handleChallengeSent = (opponentUsername) => {
+    const challenges = JSON.parse(localStorage.getItem('pendingChallenges')) || {};
+    challenges[opponentUsername] = { from: currentUser.username, status: 'pending' };
+    localStorage.setItem('pendingChallenges', JSON.stringify(challenges));
+    setOpponent(opponentUsername);
+    console.log(`Вызов отправлен игроку ${opponentUsername}`);
   };
 
-  const handleExitGame = () => {
-    handleStageChange('landing', () => {
-      setSelectedChar(null);
-      setDifficulty(1);
-    });
-  };
-
-  const handleBackFromCharSelect = () => {
-    handleStageChange('landing', () => setSelectedChar(null));
-  };
-  
-  const handleBackFromDifficultySelect = () => {
+  const handleAcceptChallenge = () => {
+    const challenger = pendingChallenge.from;
+    setOpponent(challenger);
+    const challenges = JSON.parse(localStorage.getItem('pendingChallenges')) || {};
+    delete challenges[currentUser.username];
+    localStorage.setItem('pendingChallenges', JSON.stringify(challenges));
+    setPendingChallenge(null);
     handleStageChange('characterSelect');
   };
+
+  const handleDeclineChallenge = () => {
+    const challenges = JSON.parse(localStorage.getItem('pendingChallenges')) || {};
+    delete challenges[currentUser.username];
+    localStorage.setItem('pendingChallenges', JSON.stringify(challenges));
+    setPendingChallenge(null);
+  };
   
-  const handleOpenInfo = () => setIsInfoModalVisible(true);
-  const handleCloseInfo = () => setIsInfoModalVisible(false);
-
-  // --- НОВЫЕ ОБРАБОТЧИКИ ДЛЯ АВТОРИЗАЦИИ И ПРОФИЛЯ ---
-  const handleOpenAuth = () => setIsAuthModalVisible(true);
-  const handleCloseAuth = () => setIsAuthModalVisible(false);
-  const handleOpenProfile = () => setIsProfileModalVisible(true);
-  const handleCloseProfile = () => setIsProfileModalVisible(false);
-
-  const handleLogin = (username) => {
-    const users = JSON.parse(localStorage.getItem('users'));
-    if (users[username]) {
-      const user = users[username];
-      setCurrentUser(user);
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      setIsAuthModalVisible(false);
-    }
+  const handleExitGame = () => {
+    setSelectedChar(null);
+    setDifficulty(1);
+    setOpponent(null);
+    handleStageChange('landing');
   };
 
-  const handleRegister = (username) => {
-    handleLogin(username);
+  const handleWin = () => {
+    console.log("Победа!");
+  };
+  
+  const handleLose = () => {
+    console.log("Поражение.");
+  };
+
+  // Логика модальных окон
+  const handleOpenInfoModal = () => setIsInfoModalVisible(true);
+  const handleCloseInfoModal = () => setIsInfoModalVisible(false);
+  const handleOpenAuthModal = () => setIsAuthModalVisible(true);
+  const handleCloseAuthModal = () => setIsAuthModalVisible(false);
+  const handleOpenProfileModal = () => setIsProfileModalVisible(true);
+  const handleCloseProfileModal = () => setIsProfileModalVisible(false);
+
+  const handleLogin = (username) => {
+    const users = JSON.parse(localStorage.getItem('users')) || {};
+    const user = users[username];
+    setCurrentUser(user);
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    setIsAuthModalVisible(false);
   };
 
   const handleLogout = () => {
@@ -969,54 +993,29 @@ export default function App() {
     setIsProfileModalVisible(false);
   };
 
-  const handleWin = () => {
-    if (currentUser) {
-      const users = JSON.parse(localStorage.getItem('users'));
-      const updatedUser = { ...currentUser, stats: { ...currentUser.stats, wins: currentUser.stats.wins + 1 } };
-      users[updatedUser.username] = updatedUser;
-      localStorage.setItem('users', JSON.stringify(users));
-      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-      setCurrentUser(updatedUser);
+  const handleConfirmCharacter = () => {
+    if (!opponent) {
+      handleStageChange('difficultySelect');
+    } else {
+      // Это заглушка, которая позволяет запустить игру сразу после выбора персонажа.
+      // В реальной игре здесь произошла бы синхронизация с противником.
+      handleStageChange('game');
     }
   };
 
-  const handleLose = () => {
-    if (currentUser) {
-      const users = JSON.parse(localStorage.getItem('users'));
-      const updatedUser = { ...currentUser, stats: { ...currentUser.stats, losses: currentUser.stats.losses + 1 } };
-      users[updatedUser.username] = updatedUser;
-      localStorage.setItem('users', JSON.stringify(users));
-      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-      setCurrentUser(updatedUser);
-    }
-  };
-  
-  const playerClass = characters.find(c => c.id === selectedChar) || characters[0];
-  
-  const [animateStep, setAnimateStep] = useState(0);
-  useEffect(() => {
-    if (stage === 'landing' && !isTransitioning) {
-      const timers = [
-        setTimeout(() => setAnimateStep(1), 300),
-        setTimeout(() => setAnimateStep(2), 900),
-        setTimeout(() => setAnimateStep(3), 1300),
-      ];
-      return () => timers.forEach(clearTimeout);
-    } else {
-      setAnimateStep(0);
-    }
-  }, [stage, isTransitioning]);
+  const playerClass = selectedChar ? characters.find(c => c.id === selectedChar) : null;
 
   return (
-    <div className="App">
+    <div className="app">
       {isTransitioning && <TransitionOverlay />}
-      {stage === 'landing' && !isMultiplayerVisible && (
+      
+      {stage === 'landing' && (
         <Landing
           onPlay={handlePlay}
           onMultiplayer={handleOpenMultiplayer}
-          onOpenInfo={handleOpenInfo}
-          onOpenAuth={handleOpenAuth}
-          onOpenProfile={handleOpenProfile}
+          onOpenInfo={handleOpenInfoModal}
+          onOpenAuth={handleOpenAuthModal}
+          onOpenProfile={handleOpenProfileModal}
           onLogout={handleLogout}
           currentUser={currentUser}
           isFadingOut={isTransitioning}
@@ -1024,50 +1023,42 @@ export default function App() {
           onToggleMute={handleToggleMute}
           volume={volume}
           onVolumeChange={handleVolumeChange}
-          animateStep={animateStep}
+          animateStep={stage === 'landing' ? 3 : 0}
         />
       )}
-      {isInfoModalVisible && (
-        <InfoModal
-          onClose={handleCloseInfo}
-          onAnimationEnd={() => setIsInfoModalVisible(false)}
-        />
-      )}
-      {isMultiplayerVisible && (
-        <MultiplayerPlaceholder onBack={handleCloseMultiplayer} />
-      )}
-      {isAuthModalVisible && (
-        <AuthModal
-          onClose={handleCloseAuth}
-          onLogin={handleLogin}
-          onRegister={handleRegister}
-        />
-      )}
-      {isProfileModalVisible && currentUser && (
-        <ProfileModal
-          user={currentUser}
-          onClose={handleCloseProfile}
-          onLogout={handleLogout}
-        />
-      )}
+
       {stage === 'characterSelect' && (
         <CharacterSelect
           characters={characters}
           selectedChar={selectedChar}
           onSelect={setSelectedChar}
-          onBack={handleBackFromCharSelect}
-          onConfirm={handleConfirmChar}
+          onBack={() => handleStageChange(opponent ? 'multiplayerLobby' : 'landing')}
+          onConfirm={handleConfirmCharacter}
           isFadingOut={isTransitioning}
         />
       )}
+      
       {stage === 'difficultySelect' && (
         <DifficultySelect
-          onSelect={handleConfirmDifficulty}
-          onBack={handleBackFromDifficultySelect}
+          onSelect={(mult) => {
+            setDifficulty(mult);
+            handleStageChange('game');
+          }}
+          onBack={() => handleStageChange('characterSelect')}
           isFadingOut={isTransitioning}
         />
       )}
-      {stage === 'game' && (
+
+      {stage === 'multiplayerLobby' && currentUser && (
+        <MultiplayerLobby
+          onBack={() => handleStageChange('landing')}
+          currentUser={currentUser}
+          onChallengeSent={handleChallengeSent}
+          isChallengingOpponent={!!opponent}
+        />
+      )}
+
+      {stage === 'game' && playerClass && (
         <Game
           playerClass={playerClass}
           difficulty={difficulty}
@@ -1075,6 +1066,34 @@ export default function App() {
           onWin={handleWin}
           onLose={handleLose}
           isFadingOut={isTransitioning}
+        />
+      )}
+
+      {isInfoModalVisible && (
+        <InfoModal onAnimationEnd={handleCloseInfoModal} />
+      )}
+      
+      {isAuthModalVisible && (
+        <AuthModal
+          onClose={handleCloseAuthModal}
+          onLogin={handleLogin}
+          onRegister={handleLogin}
+        />
+      )}
+
+      {isProfileModalVisible && currentUser && (
+        <ProfileModal
+          user={currentUser}
+          onClose={handleCloseProfileModal}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {pendingChallenge && (
+        <ChallengeNotificationModal
+          challenger={pendingChallenge.from}
+          onAccept={handleAcceptChallenge}
+          onDecline={handleDeclineChallenge}
         />
       )}
     </div>
