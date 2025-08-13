@@ -375,6 +375,21 @@ const createBalancedDeck = (baseCards, totalSize) => {
   return shuffle(finalDeck);
 };
 
+// --- НОВЫЙ КОМПОНЕНТ ДЛЯ АНИМАЦИИ ПОБЕДЫ ---
+function VictoryAnimation() {
+  const confettiCount = 50;
+  const confetti = Array.from({ length: confettiCount }).map((_, i) => {
+    const style = {
+      left: `${Math.random() * 100}vw`,
+      animationDuration: `${Math.random() * 3 + 2}s`,
+      animationDelay: `${Math.random() * 1}s`,
+      transform: `scale(${Math.random() * 0.5 + 0.5})`,
+    };
+    return <div key={i} className="confetti" style={style} />;
+  });
+
+  return <div className="victory-animation-container">{confetti}</div>;
+}
 
 function Game({ playerClass, difficulty, onExit, isFadingOut }) {
   const [player, setPlayer] = useState(null);
@@ -637,7 +652,9 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
           </button>
         </div>
       ) : ai.hp <= 0 ? (
-        <div className="victory-defeat-screen">
+        // --- ОБНОВЛЕННЫЙ ЭКРАН ПОБЕДЫ ---
+        <div className="victory-defeat-screen victory-banner">
+          <VictoryAnimation />
           <h1>Вы выиграли! 🎉</h1>
           <button onClick={onExit} className="button-primary button-hover">
             Играть снова

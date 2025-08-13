@@ -69,3 +69,63 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+/* ... existing CSS ... */
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: var(--color-mana);
+  border-radius: 50%;
+  top: 0;
+  animation: confetti-fall 5s ease-out forwards;
+  opacity: 0;
+}
+
+.confetti:nth-child(2n) {
+  background-color: var(--color-primary);
+  animation-delay: 0.5s;
+}
+
+.confetti:nth-child(3n) {
+  background-color: var(--color-error);
+  animation-delay: 1s;
+}
+
+.victory-animation-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@keyframes victory-fall {
+  0% {
+    transform: translateY(-100vh);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.victory-banner {
+  animation: victory-fall 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
