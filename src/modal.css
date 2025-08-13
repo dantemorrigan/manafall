@@ -97,7 +97,7 @@
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: all 0.3s ease-in-out; /* Изменено для более плавной анимации */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
@@ -110,7 +110,7 @@
 /* Дополнительные стили для кнопок внутри модального окна */
 .modal-content .button-primary,
 .modal-content .link-button {
-  min-width: 240px; /* Приведение к единому размеру с основными кнопками */
+  min-width: 240px;
 }
 
 /* Стили для модальных окон профиля и авторизации */

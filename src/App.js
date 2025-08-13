@@ -767,7 +767,7 @@ function Game({ playerClass, difficulty, onExit, onWin, onLose, isFadingOut }) {
         <div className="victory-defeat-screen">
           <h1>Вы проиграли 😞</h1>
           <button onClick={onExit} className="button-primary button-hover">
-            Попробовать снова
+            Вернуться в главное меню
           </button>
         </div>
       ) : ai.hp <= 0 ? (
