@@ -38,8 +38,9 @@
 
 ## 🖼️ Скриншоты
 
-<img width="728" height="339" alt="Снимок экрана 2025-08-13 в 6 04 05 PM" src="https://github.com/user-attachments/assets/e1300515-b31b-4127-b3b7-d84898fa0d82" />
-<img width="1426" height="668" alt="Снимок экрана 2025-08-13 в 6 04 15 PM" src="https://github.com/user-attachments/assets/018795e0-34ca-4c55-9175-f76e72c5336a" />
+<img width="753" height="339" alt="Снимок экрана 2025-08-13 в 6 15 10 PM" src="https://github.com/user-attachments/assets/56629d0d-a2b5-493e-999c-3704087609c2" />
+<img width="753" height="339" alt="Снимок экрана 2025-08-13 в 6 15 30 PM" src="https://github.com/user-attachments/assets/459736fb-b4ce-4c80-becd-45ec8db0661a" />
+
 
 ## 💡 Планы на будущее
 
