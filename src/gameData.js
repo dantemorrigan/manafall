@@ -1,54 +1,50 @@
- // src/gameData.js
- 
- export const cards = {
-   // Базовые карты
-   strike: { id: 'strike', name: 'Удар', type: 'attack', cost: 1, value: 5, description: 'Наносит 5 урона.' },
-   block: { id: 'block', name: 'Блок', type: 'defense', cost: 1, value: 5, description: 'Получает 5 брони.' },
- 
-   // Новые карты
-   heavy_strike: { id: 'heavy_strike', name: 'Мощный удар', type: 'attack', cost: 2, value: 8, description: 'Наносит 8 урона.' },
-   shield_wall: { id: 'shield_wall', name: 'Стена щитов', type: 'defense', cost: 2, value: 8, description: 'Получает 8 брони.' },
-   heal: { id: 'heal', name: 'Лечение', type: 'heal', cost: 3, value: 10, description: 'Восстанавливает 10 HP.' },
-   draw_cards: { id: 'draw_cards', name: 'Прозрение', type: 'utility', cost: 2, value: 2, description: 'Возьмите 2 карты.' },
-   mana_drain: { id: 'mana_drain', name: 'Вытяжка маны', type: 'utility', cost: 1, value: 2, description: 'Снижает ману противника на 2.' },
- 
-   // Карты мага
-   fireball: { id: 'fireball', name: 'Огненный шар', type: 'attack', cost: 2, value: 7, description: 'Наносит 7 урона.' },
-   ice_barrier: { id: 'ice_barrier', name: 'Ледяной барьер', type: 'defense', cost: 2, value: 6, description: 'Получает 6 брони.' },
-   arcane_blast: { id: 'arcane_blast', name: 'Тайный взрыв', type: 'attack', cost: 3, value: 10, description: 'Наносит 10 урона.' },
-   mana_burst: { id: 'mana_burst', name: 'Всплеск маны', type: 'utility', cost: 1, value: 1, description: 'Получает 1 дополнительную ману.'},
-   teleport: { id: 'teleport', name: 'Телепорт', type: 'utility', cost: 0, value: 1, description: 'Позволяет взять 1 карту.'}
- };
- 
- export const characters = [
-   {
-     id: 'warrior',
-     name: 'Герой',
-     desc: 'Сбалансированный персонаж, обладающий как атакой, так и защитой.',
-     deck: [
-       cards.strike, cards.strike, cards.strike, cards.strike,
-       cards.block, cards.block, cards.block, cards.block,
-       cards.heavy_strike, cards.heavy_strike,
-       cards.shield_wall, cards.shield_wall,
-       cards.heal, cards.heal,
-       cards.draw_cards, cards.draw_cards,
-       cards.mana_drain, cards.mana_drain,
-       cards.strike, cards.block,
-     ],
-   },
-   {
-     id: 'mage',
-     name: 'Маг',
-     desc: 'Специалист по мане и мощным заклинаниям.',
-     deck: [
-       cards.fireball, cards.fireball, cards.fireball,
-       cards.ice_barrier, cards.ice_barrier, cards.ice_barrier,
-       cards.arcane_blast, cards.arcane_blast,
-       cards.mana_burst, cards.mana_burst, cards.mana_burst, cards.mana_burst,
-       cards.teleport, cards.teleport, cards.teleport, cards.teleport,
-       cards.mana_drain, cards.mana_drain,
-       cards.heal, cards.heal,
-     ],
-   },
- ];
- 
+import { v4 as uuidv4 } from 'uuid';
+
+// Единый пул всех карт в игре
+export const allCards = [
+    // Карты атаки
+    { id: 'strike', name: 'Удар', type: 'attack', cost: 1, value: 5, description: 'Наносит 5 урона.' },
+    { id: 'double_strike', name: 'Двойной Удар', type: 'attack', cost: 2, value: 8, description: 'Наносит 8 урона.' },
+    { id: 'heavy_blow', name: 'Мощный Удар', type: 'attack', cost: 3, value: 12, description: 'Наносит 12 урона.' },
+    { id: 'rapid_fire', name: 'Шквал Стрел', type: 'attack', cost: 2, value: 3, description: 'Наносит 3 урона 2 раза.' },
+    { id: 'fireball', name: 'Огненный Шар', type: 'attack', cost: 2, value: 7, description: 'Наносит 7 урона.' },
+
+    // Карты защиты
+    { id: 'shield', name: 'Щит', type: 'defense', cost: 1, value: 3, description: 'Получает 3 брони.' },
+    { id: 'heavy_shield', name: 'Тяжелый Щит', type: 'defense', cost: 2, value: 5, description: 'Получает 5 брони.' },
+    { id: 'barrier', name: 'Магический Барьер', type: 'defense', cost: 2, value: 6, description: 'Получает 6 брони.' },
+
+    // Утилитарные карты
+    { id: 'reflect', name: 'Отражение', type: 'utility', cost: 1, value: 3, description: 'Следующая атака отражает 3 урона.' },
+    { id: 'mana_potion', name: 'Зелье Маны', type: 'utility', cost: 0, value: 2, description: 'Восстанавливает 2 маны.' },
+    { id: 'mana_drain', name: 'Вытягивание Маны', type: 'utility', cost: 1, value: 2, description: 'Отнимает 2 маны у противника.' },
+    { id: 'draw_cards', name: 'Взять Карты', type: 'utility', cost: 1, value: 2, description: 'Берёт 2 карты из колоды.' },
+    
+    // Карты лечения
+    { id: 'heal_potion', name: 'Зелье Лечения', type: 'heal', cost: 2, value: 5, description: 'Восстанавливает 5 HP.' },
+];
+
+export const characters = [
+    {
+        id: 'warrior',
+        name: 'Воин',
+        desc: 'Специализируется на сильных атаках и броне.',
+        deck: [
+            ...allCards.filter(c => c.type === 'attack'),
+            ...allCards.filter(c => c.type === 'defense'),
+            allCards.find(c => c.id === 'reflect'),
+        ].filter(Boolean),
+    },
+    {
+        id: 'mage',
+        name: 'Маг',
+        desc: 'Использует магию для контроля и мощных заклинаний.',
+        deck: [
+            allCards.find(c => c.id === 'fireball'),
+            allCards.find(c => c.id === 'mana_drain'),
+            allCards.find(c => c.id === 'draw_cards'),
+            allCards.find(c => c.id === 'heal_potion'),
+            allCards.find(c => c.id === 'barrier'),
+        ].filter(Boolean),
+    },
+];

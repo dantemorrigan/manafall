@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { characters } from './gameData';
+import { characters, allCards } from './gameData';
 import './animations.css';
 import './modal.css';
 import './App.css';
@@ -230,13 +230,9 @@ function DifficultySelect({ onSelect, onBack, isFadingOut }) {
 }
 
 // Компонент полосы состояния (HP, Mana, Armor)
-function StatusBar({ label, current, max, color }) {
-  // Если max не задан (как для брони), используем текущее значение для заполнения
+function StatusBar({ label, current, max, color, isArmor }) {
   const effectiveMax = max || current;
   const percentage = effectiveMax > 0 ? (current / effectiveMax) * 100 : 0;
-
-  // Для брони, где нет фиксированного максимума, используем специальный класс
-  const isArmor = label === 'Броня';
 
   return (
     <div className="status-bar-container">
@@ -245,7 +241,7 @@ function StatusBar({ label, current, max, color }) {
         <div
           className={`status-bar-fill ${isArmor ? 'armor' : ''}`}
           style={{
-            width: `${isArmor ? Math.min(percentage, 100) : percentage}%`,
+            width: `${isArmor ? Math.min((current / 15) * 100, 100) : percentage}%`, // Armor max is 15
             backgroundColor: isArmor ? 'var(--color-armor)' : color
           }}
         />
@@ -285,12 +281,55 @@ const getMaxHandSize = (currentRound) => {
   return 6;
 };
 
+// Функция для создания сбалансированной колоды
+const createBalancedDeck = (baseCards, totalSize) => {
+  const shuffledCards = shuffle(baseCards);
+  const deck = [];
+  const cardCounts = {};
+
+  // Функция для безопасного добавления карты
+  const addCard = (cardId) => {
+    const cardToAdd = allCards.find(c => c.id === cardId);
+    if (cardToAdd) {
+      deck.push({ ...cardToAdd, uuid: uuidv4() });
+      cardCounts[cardId] = (cardCounts[cardId] || 0) + 1;
+      return true;
+    }
+    return false;
+  };
+  
+  // Создание колоды с заданным составом
+  const deckComposition = {
+    'attack': 6,
+    'defense': 4,
+    'utility': 2,
+    'heal': 1
+  };
+
+  const cardPool = [...shuffledCards];
+  const finalDeck = [];
+
+  for (const [type, count] of Object.entries(deckComposition)) {
+    const cardsOfType = cardPool.filter(c => c.type === type);
+    finalDeck.push(...cardsOfType.slice(0, count));
+  }
+
+  // Добиваем до нужного размера, если нужно
+  while (finalDeck.length < totalSize && cardPool.length > 0) {
+    finalDeck.push({ ...cardPool.pop(), uuid: uuidv4() });
+  }
+
+  return shuffle(finalDeck);
+};
+
+
 function Game({ playerClass, difficulty, onExit, isFadingOut }) {
   const [player, setPlayer] = useState(null);
   const [ai, setAi] = useState(null);
   const [turn, setTurn] = useState('player');
   const [message, setMessage] = useState('');
   const [round, setRound] = useState(1);
+  const maxArmor = 15; // Ограничение на броню
 
   // Логика игры
   const playCard = (cardIndex) => {
@@ -319,7 +358,7 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
       newAi = takeDamage(newAi, card.value);
       actionMessage = `Вы нанесли ${card.value} урона ИИ. 💥`;
     } else if (card.type === 'defense') {
-      newPlayer.armor += card.value;
+      newPlayer.armor = Math.min(newPlayer.armor + card.value, maxArmor);
       actionMessage = `Вы получили ${card.value} брони. 🛡️`;
     } else if (card.id === 'reflect') {
       newPlayer.reflect = 3;
@@ -352,43 +391,14 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
 
   // Логика инициализации игры
   useEffect(() => {
-    // Получаем исходные колоды
-    const pDeckRaw = playerClass.deck;
+    // Создаем сбалансированные колоды для игрока и ИИ
+    const pDeck = createBalancedDeck(playerClass.deck, 15);
     const aiClass = characters.find(c => c.id !== playerClass.id) || characters[0];
-    const aiDeckRaw = aiClass.deck;
-
-    // Объединяем и сортируем карты по типам для балансировки
-    const allAttackCards = [...pDeckRaw, ...aiDeckRaw].filter(c => c.type === 'attack');
-    const allDefenseCards = [...pDeckRaw, ...aiDeckRaw].filter(c => c.type === 'defense');
-    const allOtherCards = [...pDeckRaw, ...aiDeckRaw].filter(c => c.type !== 'attack' && c.type !== 'defense');
-
-    // Перемешиваем каждый тип карт
-    const shuffledAttack = shuffle(allAttackCards);
-    const shuffledDefense = shuffle(allDefenseCards);
-    const shuffledOther = shuffle(allOtherCards);
-
-    // Создаем сбалансированные колоды, разделяя карты поровну
-    const pDeck = [];
-    const aiDeck = [];
-
-    const halfAttack = Math.floor(shuffledAttack.length / 2);
-    pDeck.push(...shuffledAttack.slice(0, halfAttack));
-    aiDeck.push(...shuffledAttack.slice(halfAttack));
-
-    const halfDefense = Math.floor(shuffledDefense.length / 2);
-    pDeck.push(...shuffledDefense.slice(0, halfDefense));
-    aiDeck.push(...shuffledDefense.slice(halfDefense));
-
-    pDeck.push(...shuffledOther.slice(0, Math.floor(shuffledOther.length / 2)));
-    aiDeck.push(...shuffledOther.slice(Math.floor(shuffledOther.length / 2)));
-
-    // Финальное перемешивание объединенных колод
-    const finalPDeck = shuffle(pDeck.map(card => ({ ...card, uuid: uuidv4() })));
-    const finalAiDeck = shuffle(aiDeck.map(card => ({ ...card, uuid: uuidv4() })));
+    const aiDeck = createBalancedDeck(aiClass.deck, 15);
 
     // Инициализация состояний игры с новыми колодами
-    const p = { name: 'Игрок', maxHp: 30, hp: 30, mana: 0, maxMana: 2, armor: 0, deck: finalPDeck, hand: [], reflect: 0 };
-    const aiPlayer = { name: 'ИИ', maxHp: 30, hp: 30, mana: 0, maxMana: 2, armor: 0, deck: finalAiDeck, hand: [], reflect: 0 };
+    const p = { name: 'Игрок', maxHp: 30, hp: 30, mana: 0, maxMana: 2, armor: 0, deck: pDeck, hand: [], reflect: 0 };
+    const aiPlayer = { name: 'ИИ', maxHp: 30, hp: 30, mana: 0, maxMana: 2, armor: 0, deck: aiDeck, hand: [], reflect: 0 };
 
     const initialHandSize = getMaxHandSize(1);
     for (let i = 0; i < initialHandSize; i++) {
@@ -432,16 +442,14 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
         }
         newAi.reflect = 0;
 
-        const aiHasPlayableCards = newAi.hand.some(c => c.cost <= newAi.mana);
-        if (!aiHasPlayableCards && newAi.deck.length === 0) {
-          setMessage('У ИИ закончились карты и нет ходов. Вы выиграли! 🎉');
-          setAi({ ...newAi, hp: 0 });
+        const playableCards = newAi.hand.filter(c => c.cost <= newAi.mana);
+        if (playableCards.length === 0) {
+          setMessage('ИИ пропускает ход (нет маны или карт)');
+          setTurn('player');
           return;
         }
 
         let card;
-        const playableCards = newAi.hand.filter(c => c.cost <= newAi.mana);
-
         // Логика выбора карты в зависимости от сложности
         if (difficulty <= 0.5) { // Легкий
           const randomCardIndex = Math.floor(Math.random() * playableCards.length);
@@ -456,7 +464,7 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
           const defenseCards = playableCards.filter(c => c.type === 'defense');
           if (player.hp <= 10 && attackCards.length > 0) {
             card = attackCards.sort((a, b) => b.value - a.value)[0];
-          } else if (ai.hp <= 10 && defenseCards.length > 0) {
+          } else if (newAi.hp <= 10 && defenseCards.length > 0) {
             card = defenseCards.sort((a, b) => b.value - a.value)[0];
           } else {
             card = playableCards.sort((a, b) => b.cost - a.cost)[0];
@@ -464,7 +472,8 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
         }
 
         if (!card) {
-          setMessage('ИИ пропускает ход (нет маны или карт)');
+            // Если нет играбельной карты, ИИ пропускает ход
+            setMessage('ИИ пропускает ход (нет маны или карт)');
         } else {
           const cardIndex = newAi.hand.findIndex(c => c.uuid === card.uuid);
           newAi.mana -= card.cost;
@@ -480,7 +489,7 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
             newPlayer = takeDamage(newPlayer, card.value);
             actionMessage = `ИИ наносит вам ${card.value} урона. 💥`;
           } else if (card.type === 'defense') {
-            newAi.armor += card.value;
+            newAi.armor = Math.min(newAi.armor + card.value, maxArmor);
             actionMessage = `ИИ получает ${card.value} брони. 🛡️`;
           } else if (card.id === 'reflect') {
             newAi.reflect = 3;
@@ -576,14 +585,14 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
                 <h3>Игрок</h3>
                 <StatusBar label="HP" current={player.hp} max={player.maxHp} color="var(--color-error)" />
                 <StatusBar label="Мана" current={player.mana} max={player.maxMana} color="var(--color-mana)" />
-                <StatusBar label="Броня" current={player.armor} max={20} color="var(--color-armor)" />
+                <StatusBar label="Броня" current={player.armor} max={maxArmor} color="var(--color-armor)" isArmor={true} />
               </div>
 
               <div className="player-box-ai">
                 <h3>ИИ</h3>
                 <StatusBar label="HP" current={ai.hp} max={ai.maxHp} color="var(--color-error)" />
                 <StatusBar label="Мана" current={ai.mana} max={ai.maxMana} color="var(--color-mana)" />
-                <StatusBar label="Броня" current={ai.armor} max={20} color="var(--color-armor)" />
+                <StatusBar label="Броня" current={ai.armor} max={maxArmor} color="var(--color-armor)" isArmor={true} />
                 <p>Карт в колоде: {ai.deck.length}</p>
               </div>
             </div>
