@@ -15,15 +15,30 @@ function TransitionOverlay() {
 }
 
 // Компонент модального окна с информацией
-function InfoModal({ onClose }) {
+function InfoModal({ onAnimationEnd }) {
+  const [shouldAnimateOut, setShouldAnimateOut] = useState(false);
+
+  const handleClose = () => {
+    setShouldAnimateOut(true);
+  };
+
+  useEffect(() => {
+    if (shouldAnimateOut) {
+      const timer = setTimeout(() => {
+        onAnimationEnd(); // Полностью скрываем компонент, когда анимация закончится
+      }, 300); // Длительность анимации закрытия в CSS (должна соответствовать CSS)
+      return () => clearTimeout(timer);
+    }
+  }, [shouldAnimateOut, onAnimationEnd]);
+
   return (
-    <div className="modal-backdrop">
+    <div className={`modal-backdrop ${shouldAnimateOut ? 'modal-fade-out' : 'modal-fade-in'}`}>
       <div className="modal-content">
         <h2>О Manafall</h2>
         <p>Версия: Alpha</p>
         <p>Dante Morrigan 🧑‍💻</p>
         <p>Минималистичная карточная игра, в которой побеждает тот, кто лучше управляет маной и стратегией. Основана на простой механике и стильном дизайне.</p>
-        <button onClick={onClose} className="modal-close-button">Закрыть</button>
+        <button onClick={handleClose} className="modal-close-button">Закрыть</button>
       </div>
     </div>
   );
@@ -633,12 +648,12 @@ export default function App() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.5);
+  const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
 
-  const TRANSITION_DURATION = 500; // Длительность анимации в мс
+  const TRANSITION_DURATION = 500;
   const audioRef = useRef(null);
 
   useEffect(() => {
-    // Инициализация Audio объекта
     if (!audioRef.current) {
       audioRef.current = new Audio('/music.mp3');
       audioRef.current.loop = true;
@@ -647,14 +662,12 @@ export default function App() {
     }
   }, []);
 
-  // Синхронизация громкости
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
   }, [volume]);
 
-  // Синхронизация статуса mute
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.muted = isMuted;
@@ -669,7 +682,6 @@ export default function App() {
     setIsMuted(!isMuted);
   };
 
-  // Универсальная функция для плавного перехода
   const handleStageChange = (newStage, callback = () => {}) => {
     setIsTransitioning(true);
     setTimeout(() => {
@@ -680,7 +692,6 @@ export default function App() {
   };
 
   const handlePlay = async () => {
-    // Воспроизводим музыку при первом взаимодействии
     if (audioRef.current) {
       try {
         await audioRef.current.play();
@@ -717,9 +728,9 @@ export default function App() {
   const handleBackFromDifficultySelect = () => {
     handleStageChange('characterSelect');
   };
-
-  const handleOpenInfo = () => handleStageChange('info');
-  const handleCloseInfo = () => handleStageChange('landing');
+  
+  const handleOpenInfo = () => setIsInfoModalVisible(true);
+  const handleCloseInfo = () => setIsInfoModalVisible(false);
 
   const playerClass = characters.find(c => c.id === selectedChar) || characters[0];
   
@@ -752,7 +763,12 @@ export default function App() {
           animateStep={animateStep}
         />
       )}
-      {stage === 'info' && <InfoModal onClose={handleCloseInfo} />}
+      {isInfoModalVisible && (
+        <InfoModal
+          onClose={handleCloseInfo}
+          onAnimationEnd={() => setIsInfoModalVisible(false)}
+        />
+      )}
       {stage === 'characterSelect' && (
         <CharacterSelect
           characters={characters}
