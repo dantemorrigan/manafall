@@ -846,10 +846,14 @@ export default function App() {
   const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [opponent, setOpponent] = useState(null);
-  const [pendingChallenge, setPendingChallenge] = useState(null); // <-- Состояние для входящего вызова
+  const [pendingChallenge, setPendingChallenge] = useState(null);
 
   const TRANSITION_DURATION = 500;
   const audioRef = useRef(null);
+
+  // Список музыкальных треков
+  const musicTracks = ['/music1.mp3', '/music2.mp3'];
+  const [currentTrack, setCurrentTrack] = useState(musicTracks[Math.floor(Math.random() * musicTracks.length)]);
 
   useEffect(() => {
     // Проверяем, есть ли пользователь в localStorage при загрузке
@@ -861,12 +865,12 @@ export default function App() {
 
   useEffect(() => {
     if (!audioRef.current) {
-      audioRef.current = new Audio('/music.mp3');
+      audioRef.current = new Audio(currentTrack); // <-- Используем случайный трек
       audioRef.current.loop = true;
       audioRef.current.volume = volume;
       audioRef.current.muted = isMuted;
     }
-  }, []);
+  }, [currentTrack]); // <-- Добавляем currentTrack в зависимости
 
   useEffect(() => {
     if (audioRef.current) {
