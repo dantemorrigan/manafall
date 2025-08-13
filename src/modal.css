@@ -1,10 +1,8 @@
-/* src/modal.css */
-
 /*
-* Это файл стилей для модальных окон.
-* Все стили приведены в соответствие с основным дизайном из App.css,
-* используя переменные, чтобы сохранить единообразие.
-*/
+ * Это файл стилей для модальных окон.
+ * Все стили приведены в соответствие с основным дизайном из App.css,
+ * используя переменные, чтобы сохранить единообразие.
+ */
 
 .modal-backdrop {
   position: fixed;
@@ -13,7 +11,7 @@
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px); /* Добавлено размытие для лучшего эффекта */
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -41,44 +39,43 @@
 }
 
 .modal-content {
-  background: var(--color-dark-bg);
+  background: linear-gradient(145deg, var(--color-card-bg) 0%, #291a45 100%);
   border: 2px solid var(--color-main-purple);
-  box-shadow: 0 0 30px rgba(74, 43, 104, 0.5); /* Фирменный эффект свечения */
+  box-shadow: 0 0 30px rgba(74, 43, 104, 0.6);
   color: var(--color-light-text);
   padding: 40px;
   border-radius: 20px;
   max-width: 500px;
+  width: 90%;
   text-align: center;
-  font-family: 'Roboto Mono', monospace; /* Использование основного шрифта */
+  font-family: 'Roboto Mono', monospace;
   transform: scale(1);
   transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-/* Анимация масштабирования для контента модального окна */
-.modal-fade-in .modal-content {
+  position: relative;
   animation: modalScaleIn 0.3s forwards;
 }
 
-.modal-fade-out .modal-content {
+.modal-content.modal-fade-out {
   animation: modalScaleOut 0.3s forwards;
 }
 
 @keyframes modalScaleIn {
-  from { transform: scale(0.9); opacity: 0; }
+  from { transform: scale(0.95); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
 
 @keyframes modalScaleOut {
   from { transform: scale(1); opacity: 1; }
-  to { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(0.95); opacity: 0; }
 }
 
 .modal-content h2 {
   margin-top: 0;
-  font-family: 'Play', sans-serif; /* Использование шрифта для заголовков */
-  font-size: 2rem;
-  color: var(--color-glow-green); /* Цвет свечения */
-  text-shadow: 0 0 5px var(--color-glow-green);
+  font-family: 'Play', sans-serif;
+  font-size: 2.5rem;
+  color: var(--color-glow-green);
+  text-shadow: 0 0 8px var(--color-glow-green), 0 0 15px rgba(124, 255, 156, 0.3);
+  margin-bottom: 20px;
 }
 
 .modal-content p {
@@ -86,20 +83,40 @@
   line-height: 1.5;
 }
 
+/* Обновленные стили для кнопки закрытия */
 .modal-close-button {
   margin-top: 20px;
   padding: 12px 25px;
   font-size: 1rem;
   border: none;
-  border-radius: 10px;
-  background-color: var(--color-error); /* Красная кнопка для закрытия */
+  border-radius: 12px;
+  background-color: var(--color-error);
   color: var(--color-light-text);
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
   font-family: 'Play', sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 .modal-close-button:hover {
   background-color: #b03a3a;
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+/* Дополнительные стили для кнопок внутри модального окна */
+.modal-content .button-primary,
+.modal-content .link-button {
+  min-width: 240px; /* Приведение к единому размеру с основными кнопками */
+}
+
+/* Стили для модальных окон профиля и авторизации */
+.auth-modal, .profile-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
 }
