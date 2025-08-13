@@ -201,15 +201,15 @@ function Landing({ onPlay, onMultiplayer, onOpenInfo, onOpenAuth, onOpenProfile,
         )}
       </div>
 
-      <h1 className="game-title" style={{
+      <div className="game-logo-container" style={{
         opacity: animateStep >= 1 ? 1 : 0,
         transform: animateStep >= 1 ? 'scale(1)' : 'scale(0.8)',
         transition: 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
         position: 'relative',
         zIndex: 2,
       }}>
-        Manafall
-      </h1>
+        <img src="/manafall-logo.png" alt="Manafall Logo" className="game-logo" />
+      </div>
 
       <p className="game-subtitle" style={{
         opacity: animateStep >= 2 ? 1 : 0,
@@ -218,7 +218,7 @@ function Landing({ onPlay, onMultiplayer, onOpenInfo, onOpenAuth, onOpenProfile,
         position: 'relative',
         zIndex: 2,
       }}>
-        Минималистичная карточная игра с выбором персонажей и крутыми сражениями.
+        Минималистичная карточная игра с выбором персонажей и сражениями
       </p>
 
       <div className="main-menu-buttons" style={{
@@ -696,7 +696,7 @@ function Game({ playerClass, difficulty, onExit, onWin, onLose, isFadingOut }) {
           setMessage(actionMessage);
         }
 
-        // Завершение хода ИИ и начало хода игрока
+        // Завершение хода ИИ и начала хода игрока
         setTimeout(() => {
           const nextRound = round + 1;
           const playerMaxHandSize = getMaxHandSize(nextRound);
@@ -865,12 +865,12 @@ export default function App() {
 
   useEffect(() => {
     if (!audioRef.current) {
-      audioRef.current = new Audio(currentTrack); // <-- Используем случайный трек
+      audioRef.current = new Audio(currentTrack);
       audioRef.current.loop = true;
       audioRef.current.volume = volume;
       audioRef.current.muted = isMuted;
     }
-  }, [currentTrack]); // <-- Добавляем currentTrack в зависимости
+  }, [currentTrack]);
 
   useEffect(() => {
     if (audioRef.current) {

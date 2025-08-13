@@ -1032,3 +1032,19 @@ p {
   gap: 15px;
   border: 1px solid var(--color-glow-green);
 }
+
+/* Новый стиль для логотипа */
+.game-logo-container {
+  margin-bottom: 20px;
+  /* Для центрирования, если нужно */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Наследуем анимации из родительского компонента */
+}
+
+.game-logo {
+  width: 250px;
+  /* Установите ширину, чтобы логотип выглядел хорошо */
+  height: auto;
+}
