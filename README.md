@@ -1,70 +1,54 @@
-# Getting Started with Create React App
+# 🌟 Manafall
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<img width="698" height="642" alt="manafall-logo" src="https://github.com/user-attachments/assets/97136cdc-6292-4bbd-a4a1-38dba904f9d9" />
 
-## Available Scripts
+<p align="center">
+  <img src="https://i.imgur.com/your-logo-here.png" alt="Manafall Logo" width="250"/>
+</p>
 
-In the project directory, you can run:
+> **Manafall** — это минималистичная и захватывающая карточная игра, где стратегия и управление маной — ключ к победе. Выбирайте своего героя, собирайте уникальную колоду и сражайтесь с сильным противником, чтобы доказать своё превосходство.
 
-### `npm start`
+## 🚀 Особенности игры
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+* **Минималистичный дизайн:** Чистый и современный интерфейс, который позволяет сосредоточиться на игровом процессе.
+* **Два уникальных персонажа:** Выбирайте между могущественным Магом и доблестным Воином, каждый со своим уникальным набором карт и стилем игры.
+* **Динамичные бои:** Управляйте маной, атакуйте врага, защищайтесь и используйте специальные способности, чтобы переломить ход битвы.
+* **Сложный ИИ:** Сражайтесь с адаптивным ИИ, который меняет свою стратегию в зависимости от выбранной вами сложности.
+* **Атмосферный саундтрек:** Приятная музыка, которая поможет погрузиться в мир Manafall.
+* **Прогрессивный геймплей:** Максимальный размер руки и количество маны увеличиваются с каждым раундом, что делает позднюю игру еще более насыщенной.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## ⚙️ Установка и запуск
 
-### `npm test`
+Чтобы запустить игру локально, выполните следующие шаги:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1.  Клонируйте репозиторий:
+    ```bash
+    git clone [https://github.com/YourUsername/manafall.git](https://github.com/YourUsername/manafall.git)
+    cd manafall
+    ```
+2.  Установите зависимости:
+    ```bash
+    npm install
+    ```
+3.  Запустите сервер разработки:
+    ```bash
+    npm start
+    ```
+4.  Откройте [http://localhost:3000](http://localhost:3000) в вашем браузере.
 
-### `npm run build`
+## 🖼️ Скриншоты
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+<img width="728" height="339" alt="Снимок экрана 2025-08-13 в 6 04 05 PM" src="https://github.com/user-attachments/assets/e1300515-b31b-4127-b3b7-d84898fa0d82" />
+<img width="1426" height="668" alt="Снимок экрана 2025-08-13 в 6 04 15 PM" src="https://github.com/user-attachments/assets/018795e0-34ca-4c55-9175-f76e72c5336a" />
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 💡 Планы на будущее
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+* **Сетевая игра:** Реализация мультиплеера для сражений с другими игроками.
+* **Новые персонажи:** Добавление новых классов с уникальными картами и способностями.
+* **Дополнительные карты:** Расширение набора карт для существующих персонажей.
+* **Система достижений:** Награды за особые победы и достижения.
+* **Улучшение UI/UX:** Оптимизация интерфейса для еще более комфортной игры.
 
-### `npm run eject`
+## 👨‍💻 Автор
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Игра создана [Dante Morrigan](https://github.com/dantemorrigan).
