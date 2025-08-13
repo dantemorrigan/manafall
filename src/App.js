@@ -82,11 +82,122 @@ function MultiplayerPlaceholder({ onBack }) {
   );
 }
 
+// --- НОВЫЕ КОМПОНЕНТЫ ДЛЯ РЕГИСТРАЦИИ И ВХОДА ---
+function AuthModal({ onClose, onLogin, onRegister }) {
+  const [isLoginView, setIsLoginView] = useState(true);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleAuth = (e) => {
+    e.preventDefault();
+    setError('');
+
+    // Имитация базы данных пользователей
+    const users = JSON.parse(localStorage.getItem('users')) || {};
+
+    if (isLoginView) {
+      // Логика входа
+      if (users[username] && users[username].password === password) {
+        onLogin(username);
+      } else {
+        setError('Неверный логин или пароль.');
+      }
+    } else {
+      // Логика регистрации
+      if (users[username]) {
+        setError('Пользователь с таким именем уже существует.');
+      } else {
+        const newUser = {
+          username,
+          password,
+          avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+          stats: { wins: 0, losses: 0 }
+        };
+        users[username] = newUser;
+        localStorage.setItem('users', JSON.stringify(users));
+        onRegister(username);
+      }
+    }
+  };
+
+  return (
+    <div className="modal-backdrop modal-fade-in">
+      <div className="modal-content auth-modal">
+        <h2>{isLoginView ? 'Вход' : 'Регистрация'}</h2>
+        <form onSubmit={handleAuth}>
+          <input
+            type="text"
+            placeholder="Имя пользователя"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Пароль"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          {error && <p className="auth-error">{error}</p>}
+          <button type="submit" className="button-primary">
+            {isLoginView ? 'Войти' : 'Зарегистрироваться'}
+          </button>
+        </form>
+        <button
+          onClick={() => setIsLoginView(!isLoginView)}
+          className="link-button"
+        >
+          {isLoginView ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
+        </button>
+        <button onClick={onClose} className="modal-close-button">
+          Закрыть
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ProfileModal({ user, onClose, onLogout }) {
+  return (
+    <div className="modal-backdrop modal-fade-in">
+      <div className="modal-content profile-modal">
+        <div className="profile-header">
+          <img src={user.avatar} alt="Аватар" className="profile-avatar" />
+          <h2>Привет, {user.username}!</h2>
+        </div>
+        <div className="profile-stats">
+          <p>Победы: {user.stats.wins}</p>
+          <p>Поражения: {user.stats.losses}</p>
+        </div>
+        <button onClick={onLogout} className="button-primary">
+          Выйти
+        </button>
+        <button onClick={onClose} className="modal-close-button">
+          Закрыть
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // Главная страница с анимацией
-function Landing({ onPlay, onMultiplayer, onOpenInfo, isFadingOut, isMuted, onToggleMute, volume, onVolumeChange, animateStep }) {
+function Landing({ onPlay, onMultiplayer, onOpenInfo, onOpenAuth, onOpenProfile, onLogout, currentUser, isFadingOut, isMuted, onToggleMute, volume, onVolumeChange, animateStep }) {
   return (
     <div className={`game-container landing-page ${isFadingOut ? 'fade-out' : ''}`}>
       <div className="animated-gradient"></div>
+
+      <div className="header-menu">
+        {currentUser ? (
+          <div className="profile-section" onClick={onOpenProfile}>
+            <img src={currentUser.avatar} alt="Аватар" className="profile-avatar-small" />
+            <span className="profile-name">{currentUser.username}</span>
+          </div>
+        ) : (
+          <button onClick={onOpenAuth} className="button-link">Вход / Регистрация</button>
+        )}
+      </div>
 
       <h1 className="game-title" style={{
         opacity: animateStep >= 1 ? 1 : 0,
@@ -375,7 +486,7 @@ const createBalancedDeck = (baseCards, totalSize) => {
   return shuffle(finalDeck);
 };
 
-// --- НОВЫЙ КОМПОНЕНТ ДЛЯ АНИМАЦИИ ПОБЕДЫ ---
+// Компонент для анимации победы
 function VictoryAnimation() {
   const confettiCount = 50;
   const confetti = Array.from({ length: confettiCount }).map((_, i) => {
@@ -391,7 +502,7 @@ function VictoryAnimation() {
   return <div className="victory-animation-container">{confetti}</div>;
 }
 
-function Game({ playerClass, difficulty, onExit, isFadingOut }) {
+function Game({ playerClass, difficulty, onExit, onWin, onLose, isFadingOut }) {
   const [player, setPlayer] = useState(null);
   const [ai, setAi] = useState(null);
   const [turn, setTurn] = useState('player');
@@ -626,6 +737,14 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
     setShowSurrenderModal(false);
   };
 
+  useEffect(() => {
+    if (player && player.hp <= 0) {
+      onLose();
+    } else if (ai && ai.hp <= 0) {
+      onWin();
+    }
+  }, [player, ai, onWin, onLose]);
+
   if (!player || !ai) {
     return (
       <div className={`game-container game-page ${isFadingOut ? 'fade-out' : ''}`}>
@@ -652,7 +771,6 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
           </button>
         </div>
       ) : ai.hp <= 0 ? (
-        // --- ОБНОВЛЕННЫЙ ЭКРАН ПОБЕДЫ ---
         <div className="victory-defeat-screen victory-banner">
           <VictoryAnimation />
           <h1>Вы выиграли! 🎉</h1>
@@ -723,9 +841,20 @@ export default function App() {
   const [volume, setVolume] = useState(0.5);
   const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
   const [isMultiplayerVisible, setIsMultiplayerVisible] = useState(false);
+  const [isAuthModalVisible, setIsAuthModalVisible] = useState(false);
+  const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const TRANSITION_DURATION = 500;
   const audioRef = useRef(null);
+
+  useEffect(() => {
+    // Проверяем, есть ли пользователь в localStorage при загрузке
+    const storedUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (storedUser) {
+      setCurrentUser(storedUser);
+    }
+  }, []);
 
   useEffect(() => {
     if (!audioRef.current) {
@@ -814,6 +943,54 @@ export default function App() {
   const handleOpenInfo = () => setIsInfoModalVisible(true);
   const handleCloseInfo = () => setIsInfoModalVisible(false);
 
+  // --- НОВЫЕ ОБРАБОТЧИКИ ДЛЯ АВТОРИЗАЦИИ И ПРОФИЛЯ ---
+  const handleOpenAuth = () => setIsAuthModalVisible(true);
+  const handleCloseAuth = () => setIsAuthModalVisible(false);
+  const handleOpenProfile = () => setIsProfileModalVisible(true);
+  const handleCloseProfile = () => setIsProfileModalVisible(false);
+
+  const handleLogin = (username) => {
+    const users = JSON.parse(localStorage.getItem('users'));
+    if (users[username]) {
+      const user = users[username];
+      setCurrentUser(user);
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      setIsAuthModalVisible(false);
+    }
+  };
+
+  const handleRegister = (username) => {
+    handleLogin(username);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('currentUser');
+    setIsProfileModalVisible(false);
+  };
+
+  const handleWin = () => {
+    if (currentUser) {
+      const users = JSON.parse(localStorage.getItem('users'));
+      const updatedUser = { ...currentUser, stats: { ...currentUser.stats, wins: currentUser.stats.wins + 1 } };
+      users[updatedUser.username] = updatedUser;
+      localStorage.setItem('users', JSON.stringify(users));
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+      setCurrentUser(updatedUser);
+    }
+  };
+
+  const handleLose = () => {
+    if (currentUser) {
+      const users = JSON.parse(localStorage.getItem('users'));
+      const updatedUser = { ...currentUser, stats: { ...currentUser.stats, losses: currentUser.stats.losses + 1 } };
+      users[updatedUser.username] = updatedUser;
+      localStorage.setItem('users', JSON.stringify(users));
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+      setCurrentUser(updatedUser);
+    }
+  };
+  
   const playerClass = characters.find(c => c.id === selectedChar) || characters[0];
   
   const [animateStep, setAnimateStep] = useState(0);
@@ -838,6 +1015,10 @@ export default function App() {
           onPlay={handlePlay}
           onMultiplayer={handleOpenMultiplayer}
           onOpenInfo={handleOpenInfo}
+          onOpenAuth={handleOpenAuth}
+          onOpenProfile={handleOpenProfile}
+          onLogout={handleLogout}
+          currentUser={currentUser}
           isFadingOut={isTransitioning}
           isMuted={isMuted}
           onToggleMute={handleToggleMute}
@@ -854,6 +1035,20 @@ export default function App() {
       )}
       {isMultiplayerVisible && (
         <MultiplayerPlaceholder onBack={handleCloseMultiplayer} />
+      )}
+      {isAuthModalVisible && (
+        <AuthModal
+          onClose={handleCloseAuth}
+          onLogin={handleLogin}
+          onRegister={handleRegister}
+        />
+      )}
+      {isProfileModalVisible && currentUser && (
+        <ProfileModal
+          user={currentUser}
+          onClose={handleCloseProfile}
+          onLogout={handleLogout}
+        />
       )}
       {stage === 'characterSelect' && (
         <CharacterSelect
@@ -877,6 +1072,8 @@ export default function App() {
           playerClass={playerClass}
           difficulty={difficulty}
           onExit={handleExitGame}
+          onWin={handleWin}
+          onLose={handleLose}
           isFadingOut={isTransitioning}
         />
       )}

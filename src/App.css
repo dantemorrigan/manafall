@@ -722,3 +722,158 @@ p {
     right: 10px;
   }
 }
+
+/* === НОВЫЕ СТИЛИ ДЛЯ АВТОРИЗАЦИИ И ПРОФИЛЯ === */
+
+.header-menu {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 8px 12px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.profile-section:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  border-color: var(--color-accent-blue);
+  box-shadow: 0 4px 10px rgba(74, 144, 226, 0.4);
+}
+
+.profile-avatar-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--color-accent-blue);
+}
+
+.profile-name {
+  color: var(--color-light-text);
+  font-weight: bold;
+  font-family: 'Play', sans-serif;
+  text-shadow: 0 0 3px var(--color-accent-blue);
+}
+
+.button-link {
+  background: none;
+  border: none;
+  color: var(--color-light-text);
+  font-family: 'Play', sans-serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.button-link:hover {
+  color: var(--color-accent-blue);
+  text-decoration: underline;
+}
+
+/* Модальные окна для авторизации и профиля */
+.auth-modal .modal-content, .profile-modal .modal-content {
+  background-color: var(--color-card-bg);
+  border: 2px solid var(--color-main-purple);
+  box-shadow: 0 0 20px rgba(74, 43, 104, 0.5);
+}
+
+.auth-modal h2, .profile-modal h2 {
+  color: var(--color-accent-blue);
+  text-shadow: 0 0 5px var(--color-accent-blue);
+  font-family: 'Orbitron', sans-serif;
+}
+
+.auth-modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.auth-modal input {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-light-text);
+  font-family: 'Roboto Mono', monospace;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.auth-modal input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.auth-modal input:focus {
+  outline: none;
+  border-color: var(--color-accent-blue);
+  box-shadow: 0 0 8px var(--color-accent-blue);
+}
+
+.auth-error {
+  color: var(--color-error);
+  font-size: 0.9rem;
+  margin-top: -10px;
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid var(--color-accent-blue);
+  box-shadow: 0 0 15px var(--color-accent-blue);
+  transition: transform 0.3s ease;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+}
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.profile-header h2 {
+  font-family: 'Play', sans-serif;
+  color: var(--color-glow-green);
+  text-shadow: 0 0 5px var(--color-glow-green);
+  margin: 0;
+}
+
+.profile-stats {
+  text-align: left;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  width: 100%;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.profile-stats p {
+  margin-bottom: 5px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.9rem;
+}
