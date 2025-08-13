@@ -1,18 +1,26 @@
 /* src/modal.css */
 
+/*
+* Это файл стилей для модальных окон.
+* Все стили приведены в соответствие с основным дизайном из App.css,
+* используя переменные, чтобы сохранить единообразие.
+*/
+
 .modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px); /* Добавлено размытие для лучшего эффекта */
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
+/* Анимации для всего модального окна */
 .modal-fade-in {
   animation: fadeIn 0.3s forwards;
 }
@@ -21,27 +29,7 @@
   animation: fadeOut 0.3s forwards;
 }
 
-.modal-content {
-  background-color: #2a4d25;
-  color: #b8d8b8;
-  padding: 40px;
-  border-radius: 15px;
-  max-width: 500px;
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-  font-family: 'Orbitron', sans-serif;
-}
-
-/* Применение анимации к контенту внутри модалки */
-.modal-fade-in .modal-content {
-  animation: modalScaleIn 0.3s forwards;
-}
-
-.modal-fade-out .modal-content {
-  animation: modalScaleOut 0.3s forwards;
-}
-
-/* Анимации для всего фона модалки */
+/* Анимации для фона */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -52,21 +40,45 @@
   to { opacity: 0; }
 }
 
-/* Анимации для содержимого модалки */
+.modal-content {
+  background: var(--color-dark-bg);
+  border: 2px solid var(--color-main-purple);
+  box-shadow: 0 0 30px rgba(74, 43, 104, 0.5); /* Фирменный эффект свечения */
+  color: var(--color-light-text);
+  padding: 40px;
+  border-radius: 20px;
+  max-width: 500px;
+  text-align: center;
+  font-family: 'Roboto Mono', monospace; /* Использование основного шрифта */
+  transform: scale(1);
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Анимация масштабирования для контента модального окна */
+.modal-fade-in .modal-content {
+  animation: modalScaleIn 0.3s forwards;
+}
+
+.modal-fade-out .modal-content {
+  animation: modalScaleOut 0.3s forwards;
+}
+
 @keyframes modalScaleIn {
-  from { transform: scale(0.9); }
-  to { transform: scale(1); }
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 @keyframes modalScaleOut {
-  from { transform: scale(1); }
-  to { transform: scale(0.9); }
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(0.9); opacity: 0; }
 }
 
 .modal-content h2 {
   margin-top: 0;
+  font-family: 'Play', sans-serif; /* Использование шрифта для заголовков */
   font-size: 2rem;
-  color: #8ccf8c;
+  color: var(--color-glow-green); /* Цвет свечения */
+  text-shadow: 0 0 5px var(--color-glow-green);
 }
 
 .modal-content p {
@@ -76,17 +88,18 @@
 
 .modal-close-button {
   margin-top: 20px;
-  padding: 10px 20px;
+  padding: 12px 25px;
   font-size: 1rem;
   border: none;
-  border-radius: 8px;
-  background-color: #8ccf8c;
-  color: #1e3a22;
+  border-radius: 10px;
+  background-color: var(--color-error); /* Красная кнопка для закрытия */
+  color: var(--color-light-text);
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s;
+  font-family: 'Play', sans-serif;
 }
 
 .modal-close-button:hover {
-  background-color: #7cff9c;
+  background-color: #b03a3a;
   transform: translateY(-2px);
 }
