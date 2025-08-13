@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { characters, allCards } from './gameData';
 import './animations.css';
 import './modal.css';
@@ -39,6 +39,26 @@ function InfoModal({ onAnimationEnd }) {
         <p>Dante Morrigan 🧑‍💻</p>
         <p>Минималистичная карточная игра, в которой побеждает тот, кто лучше управляет маной и стратегией. Основана на простой механике и стильном дизайне.</p>
         <button onClick={handleClose} className="modal-close-button">Закрыть</button>
+      </div>
+    </div>
+  );
+}
+
+// Компонент модального окна для подтверждения
+function ConfirmationModal({ message, onConfirm, onCancel }) {
+  return (
+    <div className="modal-backdrop modal-fade-in">
+      <div className="modal-content">
+        <h2>Подтверждение</h2>
+        <p>{message}</p>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '20px' }}>
+          <button onClick={onConfirm} className="button-primary button-hover">
+            Да
+          </button>
+          <button onClick={onCancel} className="modal-close-button">
+            Отмена
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -168,8 +188,8 @@ function Landing({ onPlay, onMultiplayer, onOpenInfo, isFadingOut, isMuted, onTo
   );
 }
 
-// Карточка персонажа
-function CharacterCard({ char, selected, onSelect }) {
+// Карточка персонажа (обернута в React.memo для оптимизации)
+const CharacterCard = memo(({ char, selected, onSelect }) => {
   const emoji = char.id === 'warrior' ? '⚔️' : char.id === 'mage' ? '✨' : '';
   return (
     <div
@@ -180,7 +200,7 @@ function CharacterCard({ char, selected, onSelect }) {
       <p>{char.desc}</p>
     </div>
   );
-}
+});
 
 // Меню выбора персонажа
 function CharacterSelect({ characters, selectedChar, onSelect, onBack, onConfirm, isFadingOut }) {
@@ -258,10 +278,14 @@ function DifficultySelect({ onSelect, onBack, isFadingOut }) {
   );
 }
 
-// Компонент полосы состояния (HP, Mana, Armor)
-function StatusBar({ label, current, max, color, isArmor }) {
+// Компонент полосы состояния (HP, Mana, Armor) (обернут в React.memo для оптимизации)
+const StatusBar = memo(({ label, current, max, color, isArmor }) => {
   const effectiveMax = max || current;
   const percentage = effectiveMax > 0 ? (current / effectiveMax) * 100 : 0;
+  
+  // Специальная логика для шкалы брони
+  const armorMax = 10; 
+  const armorPercentage = isArmor ? Math.min((current / armorMax) * 100, 100) : percentage;
 
   return (
     <div className="status-bar-container">
@@ -270,14 +294,14 @@ function StatusBar({ label, current, max, color, isArmor }) {
         <div
           className={`status-bar-fill ${isArmor ? 'armor' : ''}`}
           style={{
-            width: `${isArmor ? Math.min((current / 15) * 100, 100) : percentage}%`, // Armor max is 15
+            width: `${armorPercentage}%`,
             backgroundColor: isArmor ? 'var(--color-armor)' : color
           }}
         />
       </div>
     </div>
   );
-}
+});
 
 // Функция для перемешивания колоды (алгоритм Фишера-Йетса)
 function shuffle(array) {
@@ -358,7 +382,8 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
   const [turn, setTurn] = useState('player');
   const [message, setMessage] = useState('');
   const [round, setRound] = useState(1);
-  const maxArmor = 15; // Ограничение на броню
+  const [showSurrenderModal, setShowSurrenderModal] = useState(false);
+  const maxArmor = 10; // Ограничение на броню теперь 10
 
   // Логика игры
   const playCard = (cardIndex) => {
@@ -575,7 +600,16 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
 
       return () => clearTimeout(aiTurnTimeout);
     }
-  }, [turn, ai, player, difficulty, round]);
+  }, [turn, ai, player, difficulty, round, maxArmor]);
+
+  const handleSurrender = () => {
+    setPlayer(prev => ({ ...prev, hp: 0 }));
+    setShowSurrenderModal(false);
+  };
+
+  const handleCancelSurrender = () => {
+    setShowSurrenderModal(false);
+  };
 
   if (!player || !ai) {
     return (
@@ -587,6 +621,14 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
 
   return (
     <div className={`game-container game-page ${isFadingOut ? 'fade-out' : ''}`}>
+      {showSurrenderModal && (
+        <ConfirmationModal
+          message="Вы уверены, что хотите сдаться? Это приведет к поражению."
+          onConfirm={handleSurrender}
+          onCancel={handleCancelSurrender}
+        />
+      )}
+
       {player.hp <= 0 ? (
         <div className="victory-defeat-screen">
           <h1>Вы проиграли 😞</h1>
@@ -603,7 +645,7 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
         </div>
       ) : (
         <>
-          <button onClick={() => { setPlayer({ ...player, hp: 0 }); }} className="surrender-button-styled">
+          <button onClick={() => setShowSurrenderModal(true)} className="surrender-button-styled">
             Сдаться 🏳️
           </button>
 
