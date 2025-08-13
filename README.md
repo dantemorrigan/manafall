@@ -1,5 +1,7 @@
 # 🌟 Manafall
 
+<img width="698" height="642" alt="manafall-logo" src="https://github.com/user-attachments/assets/97136cdc-6292-4bbd-a4a1-38dba904f9d9" />
+
 <p align="center">
   <img src="https://i.imgur.com/your-logo-here.png" alt="Manafall Logo" width="250"/>
 </p>
