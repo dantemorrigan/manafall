@@ -201,15 +201,15 @@ function Landing({ onPlay, onMultiplayer, onOpenInfo, onOpenAuth, onOpenProfile,
         )}
       </div>
 
-      <div className="game-logo-container" style={{
+      <h1 className="game-title" style={{
         opacity: animateStep >= 1 ? 1 : 0,
         transform: animateStep >= 1 ? 'scale(1)' : 'scale(0.8)',
         transition: 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
         position: 'relative',
         zIndex: 2,
       }}>
-        <img src="/manafall-logo.png" alt="Manafall Logo" className="game-logo" />
-      </div>
+        MANAFALL
+      </h1>
 
       <p className="game-subtitle" style={{
         opacity: animateStep >= 2 ? 1 : 0,
@@ -218,7 +218,7 @@ function Landing({ onPlay, onMultiplayer, onOpenInfo, onOpenAuth, onOpenProfile,
         position: 'relative',
         zIndex: 2,
       }}>
-        Минималистичная карточная игра с выбором персонажей и сражениями
+        Минималистичная карточная игра с выбором персонажей и крутыми сражениями.
       </p>
 
       <div className="main-menu-buttons" style={{
