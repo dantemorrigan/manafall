@@ -44,111 +44,125 @@ function InfoModal({ onAnimationEnd }) {
   );
 }
 
+// Компонент-заглушка для сетевой игры
+function MultiplayerPlaceholder({ onBack }) {
+  return (
+    <div className="game-container placeholder-page modal-fade-in">
+      <h2 style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--color-primary-light)' }}>
+        Сетевая игра
+      </h2>
+      <p style={{ marginTop: '20px', fontSize: '1.2rem' }}>
+        Заглушка: Этот режим находится в разработке.
+      </p>
+      <div className="loading-spinner"></div>
+      <button onClick={onBack} className="link-button" style={{ marginTop: '40px' }}>
+        Назад
+      </button>
+    </div>
+  );
+}
+
 // Главная страница с анимацией
-function Landing({ onPlay, onOpenInfo, isFadingOut, isMuted, onToggleMute, volume, onVolumeChange, animateStep }) {
+function Landing({ onPlay, onMultiplayer, onOpenInfo, isFadingOut, isMuted, onToggleMute, volume, onVolumeChange, animateStep }) {
   return (
     <div className={`game-container landing-page ${isFadingOut ? 'fade-out' : ''}`}>
       <div className="animated-gradient"></div>
 
-      <h1 style={{
+      <h1 className="game-title" style={{
         opacity: animateStep >= 1 ? 1 : 0,
-        transform: animateStep >= 1 ? 'translateY(0)' : 'translateY(-50px)',
-        transition: 'all 0.6s ease',
+        transform: animateStep >= 1 ? 'scale(1)' : 'scale(0.8)',
+        transition: 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
         position: 'relative',
         zIndex: 2,
       }}>
         Manafall
       </h1>
 
-      <p style={{
-        marginTop: 20, maxWidth: 450, fontSize: '1.2rem',
+      <p className="game-subtitle" style={{
         opacity: animateStep >= 2 ? 1 : 0,
-        transform: animateStep >= 2 ? 'translateX(0)' : 'translateX(-50px)',
-        transition: 'all 0.6s ease',
+        transform: animateStep >= 2 ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'all 0.6s ease 0.4s',
         position: 'relative',
         zIndex: 2,
       }}>
         Минималистичная карточная игра с выбором персонажей и крутыми сражениями.
       </p>
 
-      <button
-        onClick={onPlay}
-        className="button-hover"
-        style={{
-          marginTop: 40,
-          opacity: animateStep >= 3 ? 1 : 0,
-          transform: animateStep >= 3 ? 'translateY(0)' : 'translateY(50px)',
-          transition: 'all 0.6s ease',
-          animation: animateStep >= 3 ? 'pulse 2s infinite' : 'none',
-          position: 'relative',
-          zIndex: 2,
-        }}
-      >
-        Играть
-      </button>
-      
-      {/* Кнопка с иконкой настроек */}
-      <button
-        onClick={onOpenInfo}
-        style={{
-          position: 'absolute', bottom: 20, right: 20,
-          background: 'none', border: 'none', cursor: 'pointer',
-          color: 'var(--color-light-text)', padding: 0, opacity: animateStep >= 3 ? 1 : 0,
-          transition: 'opacity 0.6s ease',
-          zIndex: 2,
-        }}
-        title="Информация"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ verticalAlign: 'middle' }}
-        >
-          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73 2.73l.08.15a2 2 0 0 1 0 2l-.25.43a2 2 0 0 1-1.73 1H4a2 2 0 0 0-2 2v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.43a2 2 0 0 1 0 2l-.08.15a2 2 0 0 0 2.73 2.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-2.73l-.08-.15a2 2 0 0 1 0-2l.25-.43a2 2 0 0 1 1.73-1H20a2 2 0 0 0 2-2v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.43a2 2 0 0 1 0-2l.08-.15a2 2 0 0 0-2.73-2.73l-.15.08a2 2 0 0 1-2 0l-.43-.25A2 2 0 0 1 12.22 2z"></path>
-          <circle cx="12" cy="12" r="3"></circle>
-        </svg>
-      </button>
-
-      {/* Элементы управления музыкой */}
-      <div style={{
-        position: 'absolute', bottom: 20, left: 20,
+      <div className="main-menu-buttons" style={{
         opacity: animateStep >= 3 ? 1 : 0,
-        transition: 'opacity 0.6s ease',
-        display: 'flex', alignItems: 'center', gap: '10px',
+        transform: animateStep >= 3 ? 'scale(1)' : 'scale(0.9)',
+        transition: 'all 0.6s ease 0.8s',
+        position: 'relative',
         zIndex: 2,
       }}>
-        {/* Кнопка Mute/Unmute */}
         <button
-          onClick={onToggleMute}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: 'var(--color-light-text)', padding: 0,
-          }}
-          title={isMuted ? "Включить музыку" : "Выключить музыку"}
+          onClick={onPlay}
+          className="button-primary button-hover"
         >
-          {isMuted ? (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-volume-x"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-volume-2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          )}
+          Одиночная игра
         </button>
-        {/* Ползунок громкости */}
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.05"
-          value={volume}
-          onChange={onVolumeChange}
-          className="w-24 appearance-none h-1 bg-gray-600 rounded-full cursor-pointer"
-        />
+        <button
+          onClick={onMultiplayer}
+          className="button-secondary button-hover"
+        >
+          Сетевая игра
+        </button>
+      </div>
+      
+      <div className="utility-buttons">
+        <button
+          onClick={onOpenInfo}
+          className="icon-button"
+          title="Информация"
+          style={{
+            opacity: animateStep >= 3 ? 1 : 0,
+            transition: 'opacity 0.6s ease 0.8s',
+            zIndex: 2,
+          }}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ verticalAlign: 'middle' }}
+          >
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73 2.73l.08.15a2 2 0 0 1 0 2l-.25.43a2 2 0 0 1-1.73 1H4a2 2 0 0 0-2 2v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.43a2 2 0 0 1 0 2l-.08.15a2 2 0 0 0 2.73 2.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-2.73l-.08-.15a2 2 0 0 1 0-2l.25-.43a2 2 0 0 1 1.73-1H20a2 2 0 0 0 2-2v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.43a2 2 0 0 1 0-2l.08-.15a2 2 0 0 0-2.73-2.73l-.15.08a2 2 0 0 1-2 0l-.43-.25A2 2 0 0 1 12.22 2z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '10px',
+          opacity: animateStep >= 3 ? 1 : 0,
+          transition: 'opacity 0.6s ease 0.8s',
+          zIndex: 2,
+        }}>
+          <button
+            onClick={onToggleMute}
+            className="icon-button"
+            title={isMuted ? "Включить музыку" : "Выключить музыку"}
+          >
+            {isMuted ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-volume-x"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-volume-2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+            )}
+          </button>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={volume}
+            onChange={onVolumeChange}
+            className="volume-slider"
+          />
+        </div>
       </div>
     </div>
   );
@@ -190,7 +204,7 @@ function CharacterSelect({ characters, selectedChar, onSelect, onBack, onConfirm
       <button
         disabled={!selectedChar}
         onClick={onConfirm}
-        className="button-hover"
+        className="button-primary button-hover"
         style={{
           marginTop: 30,
         }}
@@ -576,14 +590,14 @@ function Game({ playerClass, difficulty, onExit, isFadingOut }) {
       {player.hp <= 0 ? (
         <div className="victory-defeat-screen">
           <h1>Вы проиграли 😞</h1>
-          <button onClick={onExit} className="button-hover">
+          <button onClick={onExit} className="button-primary button-hover">
             Попробовать снова
           </button>
         </div>
       ) : ai.hp <= 0 ? (
         <div className="victory-defeat-screen">
           <h1>Вы выиграли! 🎉</h1>
-          <button onClick={onExit} className="button-hover">
+          <button onClick={onExit} className="button-primary button-hover">
             Играть снова
           </button>
         </div>
@@ -649,6 +663,7 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
+  const [isMultiplayerVisible, setIsMultiplayerVisible] = useState(false);
 
   const TRANSITION_DURATION = 500;
   const audioRef = useRef(null);
@@ -702,6 +717,14 @@ export default function App() {
     handleStageChange('characterSelect');
   };
 
+  const handleOpenMultiplayer = () => {
+    setIsMultiplayerVisible(true);
+  };
+
+  const handleCloseMultiplayer = () => {
+    setIsMultiplayerVisible(false);
+  };
+
   const handleConfirmChar = () => {
     if (selectedChar) {
       handleStageChange('difficultySelect');
@@ -751,9 +774,10 @@ export default function App() {
   return (
     <div className="App">
       {isTransitioning && <TransitionOverlay />}
-      {stage === 'landing' && (
+      {stage === 'landing' && !isMultiplayerVisible && (
         <Landing
           onPlay={handlePlay}
+          onMultiplayer={handleOpenMultiplayer}
           onOpenInfo={handleOpenInfo}
           isFadingOut={isTransitioning}
           isMuted={isMuted}
@@ -768,6 +792,9 @@ export default function App() {
           onClose={handleCloseInfo}
           onAnimationEnd={() => setIsInfoModalVisible(false)}
         />
+      )}
+      {isMultiplayerVisible && (
+        <MultiplayerPlaceholder onBack={handleCloseMultiplayer} />
       )}
       {stage === 'characterSelect' && (
         <CharacterSelect
